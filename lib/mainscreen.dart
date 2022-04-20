@@ -22,7 +22,6 @@ class Mainscreen extends StatelessWidget {
             onTap: () {
               var get = fetch();
               get.then((value) {
-                print("value:" + value.toString());
               });
             },
             child: Card(
@@ -103,7 +102,6 @@ class _TestinggetState extends State<Testingget> {
           .map<HashMap<String, dynamic>>(
               (e) => HashMap<String, dynamic>.from(e))
           .toList();
-      print("value:" + list.toString());
       setState(() {
         isLoading = false;
       });
@@ -167,7 +165,6 @@ class _Testget1State extends State<Testget1> {
           .map<HashMap<String, dynamic>>(
               (e) => HashMap<String, dynamic>.from(e))
           .toList();
-      print("value:" + list.toString());
       setState(() {
         isLoading = false;
       });

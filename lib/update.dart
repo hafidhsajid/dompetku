@@ -99,7 +99,6 @@ class _UpdateScreenState extends State<Update> {
                                 _controllerjumlah.text, jenis);
                             res.then((value) {
                               var decode = jsonDecode(value.body as String);
-                              print('value: $decode.success');
                               if (decode['success'] == true) {
                                 if (_isOpendialog) {
                                   Navigator.pop(alertContext);
