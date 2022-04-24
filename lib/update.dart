@@ -4,28 +4,31 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 //testing
-class Update extends StatefulWidget {
-  final String id;
+String? _jenis;
+String? _nama;
+String? _jumlah;
+
+class Update extends StatelessWidget {
   final String nama;
   final String jumlah;
   final String jenis;
-  const Update(this.id, this.nama, this.jumlah, this.jenis);
+  final String id;
+  Update(this.id, this.nama, this.jumlah, this.jenis);
 
-  @override
-  State<Update> createState() => _UpdateScreenState();
-}
-
-class _UpdateScreenState extends State<Update> {
   TextEditingController _controllernama = TextEditingController();
   TextEditingController _controllerjumlah = TextEditingController();
   TextEditingController _controllerjenis = TextEditingController();
-  String jenis = "-1";
+
   String status = "";
   bool _isOpendialog = false;
   bool isLoading = false;
 
+
   @override
   Widget build(BuildContext context) {
+    _controllernama.text = this.nama;
+    _controllerjumlah.text = this.jumlah;
+    setjenis(this.jenis);
     return Scaffold(
       appBar: AppBar(
         title: Text('Update Data'),
@@ -60,33 +63,7 @@ class _UpdateScreenState extends State<Update> {
                         padding: EdgeInsets.all(16.0),
                         child: Text('Jenis', style: TextStyle(fontSize: 20)),
                       ),
-                      ListTile(
-                        title: Text("Pengeluaran"),
-                        leading: Radio(
-                          value: "Pengeluaran",
-                          groupValue: jenis,
-                          onChanged: (value) {
-                            setState(() {
-                              jenis = value as String;
-                            });
-                          },
-                          activeColor: Colors.green,
-                        ),
-                      ),
-                      ListTile(
-                        title: Text("Pemasukan"),
-                        leading: Radio(
-                          value: "Pemasukan",
-                          groupValue: jenis,
-                          onChanged: (value) {
-                            setState(() {
-                              jenis = value as String;
-                            });
-                          },
-                          activeColor: Colors.green,
-                        ),
-                      ),
-                    ],
+                      MyStatefulWidget(),],
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
@@ -95,8 +72,8 @@ class _UpdateScreenState extends State<Update> {
                       showDialog(
                           context: context,
                           builder: (alertContext) {
-                            var res = UpdateScreenHistory(_controllernama.text,
-                                _controllerjumlah.text, jenis);
+                            var res = UpdateScreenHistory(id,_controllernama.text,
+                                _controllerjumlah.text, _jenis.toString());
                             res.then((value) {
                               var decode = jsonDecode(value.body as String);
                               if (decode['success'] == true) {
@@ -104,39 +81,36 @@ class _UpdateScreenState extends State<Update> {
                                   Navigator.pop(alertContext);
                                 }
                                 isLoading = false;
-                                setState(() {
-                                  status = "Sukses";
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          content: Text(
-                                              'Message: ${decode['message']}'),
-                                        );
-                                      });
-                                });
+                                // setState(() {
+                                status = "Sukses";
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        content: Text(
+                                            'Message: ${decode['message']}'),
+                                      );
+                                      // });
+                                    });
                               } else {
-                                setState(() {
-                                  status = "Gagal";
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          content: Text(
-                                              'Message: ${decode['message']}'),
-                                        );
-                                      });
-                                  isLoading = false;
-                                });
+                                // setState(() {
+                                status = "Gagal";
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        content: Text(
+                                            'Message: ${decode['message']}'),
+                                      );
+                                    });
+                                isLoading = false;
+                                // });
                               }
                             });
                             return AlertDialog(
                               content: Text('Update ......'),
                             );
                           }).then((_) => _isOpendialog = false);
-                      setState(() {
-                        isLoading = true;
-                      });
                     },
                     child: Text('Submit'),
                   )
@@ -146,18 +120,11 @@ class _UpdateScreenState extends State<Update> {
     );
   }
 
-  @override
-  void dispose() {
-    _controllernama.dispose();
-    super.dispose();
-  }
-
   Future<http.Response> UpdateScreenHistory(
-      String nama, String jumlah, String jenis) {
+      String idd, String nama, String jumlah, String jenis) {
     final http.Client _client = http.Client();
     return _client.put(
-      Uri.parse(
-          'https://backend-dompetku.herokuapp.com/api/history/' + widget.id),
+      Uri.parse('https://backend-dompetku.herokuapp.com/api/history/' + idd),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -168,19 +135,62 @@ class _UpdateScreenState extends State<Update> {
       }),
     );
   }
+}
+
+enum Jenis { Pemasukan, Pengeluaran }
+
+void setjenis(String data) {
+  _jenis = data;
+  
+}
+
+class MyStatefulWidget extends StatefulWidget {
+  const MyStatefulWidget({Key? key}) : super(key: key);
 
   @override
-  void initState() {
-    super.initState();
+  State<MyStatefulWidget> createState() => _MyStatefulWidgetState();
+}
 
-    _controllernama = TextEditingController(text: widget.nama);
-    _controllerjumlah = TextEditingController(text: widget.jumlah);
-    if (widget.jenis == "Pengeluaran") {
-      jenis = "Pengeluaran";
-    } else if (widget.jenis == "Pemasukan") {
-      jenis = "Pemasukan";
-    } else {
-      jenis = "-1";
+class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+  Jenis? _character;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_jenis=="Pemasukan") {
+      _character = Jenis.Pemasukan;
+    } else if(_jenis=="Pengeluaran") {
+      _character = Jenis.Pengeluaran;
     }
+    return Column(
+      children: <Widget>[
+        ListTile(
+          title: const Text('Pengeluaran'),
+          leading: Radio<Jenis>(
+            value: Jenis.Pengeluaran,
+            groupValue: _character,
+            onChanged: (Jenis? value) {
+              setState(() {
+                _character = value;
+              });
+              setjenis("Pengeluaran");
+            },
+          ),
+        ),
+        ListTile(
+          title: const Text('Pemasukan'),
+          leading: Radio<Jenis>(
+            value: Jenis.Pemasukan,
+            groupValue: _character,
+            onChanged: (Jenis? value) {
+              setState(() {
+                _character = value;
+              });
+
+              setjenis("Pemasukan");
+            },
+          ),
+        ),
+      ],
+    );
   }
 }

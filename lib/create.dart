@@ -1,62 +1,17 @@
 import 'dart:convert';
+import 'dart:ffi';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class Input extends StatefulWidget {
-  const Input({Key? key}) : super(key: key);
 
-  @override
-  State<Input> createState() => InputState();
-}
-
-class InputState extends State<Input> {
-  String _input = '';
-  TextEditingController _controller = TextEditingController();
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Input Data'),
-        ),
-        body: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Column(
-              children: [
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Nama',
-                    labelText: 'Nama',
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      _input = value;
-                    });
-                  },
-                ),
-                Text('Hello World'),
-              ],
-            )
-          ],
-        ));
-  }
-}
 
 //testing
-class CreateScreen extends StatefulWidget {
-  const CreateScreen({Key? key}) : super(key: key);
-
-  @override
-  State<CreateScreen> createState() => _CreateScreenState();
-}
-
-class _CreateScreenState extends State<CreateScreen> {
+class Create extends StatelessWidget {
   TextEditingController _controllernama = TextEditingController();
   TextEditingController _controllerjumlah = TextEditingController();
   TextEditingController _controllerjenis = TextEditingController();
-  String jenis = "-1";
   String status = "";
   bool _isOpendialog = false;
   bool isLoading = false;
@@ -97,33 +52,8 @@ class _CreateScreenState extends State<CreateScreen> {
                         padding: EdgeInsets.all(16.0),
                         child: Text('Jenis', style: TextStyle(fontSize: 20)),
                       ),
-                      ListTile(
-                        title: Text("Pengeluaran"),
-                        leading: Radio(
-                          value: "Pengeluaran",
-                          groupValue: jenis,
-                          onChanged: (value) {
-                            setState(() {
-                              jenis = value as String;
-                            });
-                          },
-                          activeColor: Colors.green,
-                        ),
-                      ),
-                      ListTile(
-                        title: Text("Pemasukan"),
-                        leading: Radio(
-                          value: "Pemasukan",
-                          groupValue: jenis,
-                          onChanged: (value) {
-                            setState(() {
-                              jenis = value as String;
-                            });
-                          },
-                          activeColor: Colors.green,
-                        ),
-                      ),
-                    ],
+                      MyStatefulWidget(),
+                      ],
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
@@ -141,30 +71,30 @@ class _CreateScreenState extends State<CreateScreen> {
                                   Navigator.pop(alertContext);
                                 }
                                 isLoading = false;
-                                setState(() {
-                                  status = "Sukses";
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          content: Text(
-                                              'Message: ${decode['message']}'),
-                                        );
-                                      });
-                                });
+                                // setState(() {
+                                status = "Sukses";
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        content: Text(
+                                            'Message: ${decode['message']}'),
+                                      );
+                                    });
+                                // });
                               } else {
-                                setState(() {
-                                  status = "Gagal";
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          content: Text(
-                                              'Message: ${decode['message']}'),
-                                        );
-                                      });
-                                  isLoading = false;
-                                });
+                                // setState(() {
+                                status = "Gagal";
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        content: Text(
+                                            'Message: ${decode['message']}'),
+                                      );
+                                    });
+                                isLoading = false;
+                                // });
                               }
                             });
 
@@ -174,10 +104,6 @@ class _CreateScreenState extends State<CreateScreen> {
                                   child: CircularProgressIndicator(),
                                 ));
                           }).then((_) => _isOpendialog = false);
-
-                      setState(() {
-                        isLoading = true;
-                      });
                     },
                     child: Text('Submit'),
                   )
@@ -185,12 +111,6 @@ class _CreateScreenState extends State<CreateScreen> {
               ),
             ),
     );
-  }
-
-  @override
-  void dispose() {
-    _controllernama.dispose();
-    super.dispose();
   }
 
   Future<http.Response> createHistory(
@@ -206,6 +126,59 @@ class _CreateScreenState extends State<CreateScreen> {
         'jumlah': jumlah,
         'jenis': jenis,
       }),
+    );
+  }
+}
+
+enum Jenis { Pemasukan, Pengeluaran }
+
+String jenis = "-1";
+void setjenis(String data) {
+  jenis = data;
+}
+
+class MyStatefulWidget extends StatefulWidget {
+  const MyStatefulWidget({Key? key}) : super(key: key);
+
+  @override
+  State<MyStatefulWidget> createState() => _MyStatefulWidgetState();
+}
+
+class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+  Jenis? _character;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        ListTile(
+          title: const Text('Pengeluaran'),
+          leading: Radio<Jenis>(
+            value: Jenis.Pengeluaran,
+            groupValue: _character,
+            onChanged: (Jenis? value) {
+              setState(() {
+                _character = value;
+              });
+              setjenis("Pengeluaran");
+            },
+          ),
+        ),
+        ListTile(
+          title: const Text('Pemasukan'),
+          leading: Radio<Jenis>(
+            value: Jenis.Pemasukan,
+            groupValue: _character,
+            onChanged: (Jenis? value) {
+              setState(() {
+                _character = value;
+              });
+
+              setjenis("Pemasukan");
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -63,7 +63,7 @@ class Mainscreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => CreateScreen()));
+              context, MaterialPageRoute(builder: (context) => Create()));
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
@@ -158,7 +158,10 @@ class _Testget1State extends State<Testget1> {
       isLoading = true;
     });
     final response = await http
-        .get(Uri.parse("https://backend-dompetku.herokuapp.com/api/history"));
+        .get(Uri.parse("https://backend-dompetku.herokuapp.com/api/history"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },);
     if (response.statusCode == 200) {
       final decode = json.decode(response.body)['data'];
       list = decode
@@ -255,7 +258,7 @@ class _Testget1State extends State<Testget1> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => CreateScreen()))
+                  MaterialPageRoute(builder: (context) => Create()))
               .then((value) => setState(() {
                     isLoading = true;
                   }));
